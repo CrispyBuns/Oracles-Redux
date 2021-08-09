@@ -53,7 +53,7 @@ refreshDirtyPalettes:
 +
 	ldh a,(<hGameboyType)
 	inc a
-	jr nz,@gbcMode
+	jr @gbcMode	; Change to 'jz nz,@gbcMode' to force GBC palettes in GBA mode
 
 @gbaMode:
 	call @gbaBrightenPalette

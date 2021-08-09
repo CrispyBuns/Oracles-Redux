@@ -1,0 +1,4 @@
+	* Force both games to boot into GBA mode:
+		inc a -> dec a	; Inside code/bank0.s (Line 254)
+	* Force GBC palettes in GBA mode for both games:
+		jr nz,@gbcMode -> jr @gbcMode	; Inside code/loadGraphics.s (Line 56)

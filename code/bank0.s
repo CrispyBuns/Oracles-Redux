@@ -251,7 +251,7 @@ begin:
 	jr nz,+
 
 	; Check GBA Mode
-	inc a
+	dec a	; Change to 'inc a' to keep the game in GBC mode
 	bit 0,b
 	jr z,+
 	ld a,$ff
