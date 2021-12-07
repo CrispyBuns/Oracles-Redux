@@ -1,8 +1,11 @@
-sound2fStart:
+musLadxSideviewStart:
 
-sound2fChannel1:
+musLadxSideviewChannel1:
 	vibrato $00
 	env $0 $00
+.ifdef ROM_SEASONS
+	cmdf2
+.endif
 	duty $02
 musicf8204:
 	vol $c
@@ -56,6 +59,12 @@ musicf8204:
 	goto musicf8204
 	cmdff
 
-.define sound2fChannel0 MUSIC_CHANNEL_FALLBACK EXPORT
-.define sound2fChannel4 MUSIC_CHANNEL_FALLBACK EXPORT
-.define sound2fChannel6 MUSIC_CHANNEL_FALLBACK EXPORT
+.ifdef ROM_SEASONS
+.ifdef BUILD_VANILLA
+	.db $ff $ff $ff
+.endif
+.endif
+
+.define musLadxSideviewChannel0 MUSIC_CHANNEL_FALLBACK EXPORT
+.define musLadxSideviewChannel4 MUSIC_CHANNEL_FALLBACK EXPORT
+.define musLadxSideviewChannel6 MUSIC_CHANNEL_FALLBACK EXPORT

@@ -1,8 +1,11 @@
-sound2eStart:
+musBossStart:
 
-sound2eChannel1:
+musBossChannel1:
 	vibrato $00
 	env $0 $00
+.ifdef ROM_SEASONS
+	cmdf2
+.endif
 	duty $02
 musicf9f6b:
 	vol $6
@@ -166,9 +169,12 @@ musicf9f6b:
 	goto musicf9f6b
 	cmdff
 
-sound2eChannel0:
+musBossChannel0:
 	vibrato $00
 	env $0 $00
+.ifdef ROM_SEASONS
+	cmdf2
+.endif
 	duty $02
 musicfa087:
 	vol $6
@@ -315,7 +321,10 @@ musicfa087:
 	goto musicfa087
 	cmdff
 
-sound2eChannel4:
+musBossChannel4:
+.ifdef ROM_SEASONS
+	cmdf2
+.endif
 musicfa18c:
 	duty $12
 	note e2  $04
@@ -1059,7 +1068,10 @@ musicfa18c:
 	goto musicfa18c
 	cmdff
 
-sound2eChannel6:
+musBossChannel6:
+.ifdef ROM_SEASONS
+	cmdf2
+.endif
 musicfa756:
 	vol $5
 	vol $8

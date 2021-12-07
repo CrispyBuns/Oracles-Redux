@@ -127,8 +127,8 @@
 .endm
 
 .macro m_soundPointer
-	.db :\1Start - :b39_initSound
-	.dw \1
+	.db :\1Start - :b39_initSound ; Bank number
+	.dw \1 ; Pointer
 .endm
 
 ; Byte 1: frequency
