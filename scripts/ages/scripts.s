@@ -5164,10 +5164,12 @@ _goron_subid00_npcLoop:
 	jumpifmemoryset wcddb, CPU_ZFLAG, @present
 
 @past:
-	jumpifitemobtained TREASURE_OLD_MERMAID_KEY, @danceForGenericItem
+	; Only check these in the past
+	jumpifitemobtained TREASURE_MERMAID_KEY, @danceForGenericItem
 	jumpifitemobtained TREASURE_GORON_LETTER, @danceForOldMermaidKey
 
 @present:
+	; Check this in past and present
 	jumpifitemobtained TREASURE_BROTHER_EMBLEM, @danceForGenericItem
 
 	; Dance for brother emblem
@@ -5237,12 +5239,14 @@ _goron_subid00_npcLoop:
 
 _goronDance_begin:
 	asm15 scriptHelp.goron_checkInPresent
-	jumpifmemoryset wcddb, CPU_ZFLAG, ++
+	jumpifmemoryset wcddb, CPU_ZFLAG, @present
 
-	; Only check these in present
-	jumpifitemobtained TREASURE_OLD_MERMAID_KEY, @selectDifficulty
+@past:
+	; Only check these in the past
+	jumpifitemobtained TREASURE_MERMAID_KEY, @selectDifficulty
 	jumpifitemobtained TREASURE_GORON_LETTER, @lowestDanceLevel
-++
+
+@present:
 	; Check this in past and present
 	jumpifitemobtained TREASURE_BROTHER_EMBLEM, @selectDifficulty
 
@@ -5420,12 +5424,14 @@ goronDanceScript_givePrize:
 	wait 30
 	resetmusic
 	asm15 scriptHelp.goron_checkInPresent
-	jumpifmemoryset wcddb, CPU_ZFLAG, ++
+	jumpifmemoryset wcddb, CPU_ZFLAG, @present
 
+@past:
 	; Only check these in the past
-	jumpifitemobtained TREASURE_OLD_MERMAID_KEY, @giveGenericPrize
+	jumpifitemobtained TREASURE_MERMAID_KEY, @giveGenericPrize
 	jumpifitemobtained TREASURE_GORON_LETTER, @giveOldMermaidKey
-++
+
+@present:
 	; Check this in past and present
 	jumpifitemobtained TREASURE_BROTHER_EMBLEM, @giveGenericPrize
 
@@ -5443,7 +5449,7 @@ goronDanceScript_givePrize:
 @giveOldMermaidKey:
 	showtext TX_241a
 	wait 30
-	giveitem TREASURE_OBJECT_OLD_MERMAID_KEY_00
+	giveitem TREASURE_OBJECT_MERMAID_KEY_00
 	wait 30
 	showtext TX_241b
 	wait 30
@@ -6499,7 +6505,7 @@ _goron_bigBang_givePrize:
 	.dw @quicksandRing
 
 @mermaidKey:
-	giveitem TREASURE_MERMAID_KEY, $00
+	giveitem TREASURE_OLD_MERMAID_KEY, $00
 	retscript
 
 @hundredRupees:
