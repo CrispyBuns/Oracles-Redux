@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Oracles Redux
 
 This is a WIP improvement hack for both Oracle of Ages and Oracle of Seasons. Currently only the "Force GBC in GBA mode" hacks have been added, VWF will be looked into for implementation.
@@ -8,10 +7,7 @@ Other QoL changes/features are still being looked upon, and everyone is welcome 
 The Romhacking.net page regarding the discussion on QoL features can be found here:
 https://www.romhacking.net/forum/index.php?topic=33200.msg417307;boardseen#new
 
-# About oracles-disasm
-=======
 ## About oracles-disasm
->>>>>>> dd60129697ee982ac280441a99065a9c4434d08f
 
 This is a complete, documented disassembly of Oracle of Ages and Seasons for the Gameboy
 Color. When combined with [LynnaLab](https://github.com/stewmath/lynnalab), it is a level
