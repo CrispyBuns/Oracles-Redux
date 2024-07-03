@@ -622,10 +622,10 @@ checkDarkenRoom:
 .ifdef ROM_SEASONS
 	; Hardcoded check for snake's remains entrance
 	ld a,(wActiveGroup)
-	cp $04
+	cp >ROOM_SEASONS_439
 	jr nz,++
 	ld a,(wActiveRoom)
-	cp $39
+	cp <ROOM_SEASONS_439
 	jr nz,++
 	call getThisRoomFlags
 	and $80
@@ -2137,10 +2137,10 @@ playCompassSoundIfKeyInRoom:
 .ifdef ROM_SEASONS
 	; Hardcoded to play compass sound in d5 boss key room
 	ld a,(wActiveGroup)
-	cp $06
+	cp >ROOM_SEASONS_68b
 	jr nz,+
 	ld a,(wActiveRoom)
-	cp $8b
+	cp <ROOM_SEASONS_68b
 	jr z,@playSound
 +
 .endif
@@ -2509,6 +2509,10 @@ cutscene15:
 	call func_131f
 	call clearEnemiesKilledList
 	call func_5c6b
+
+	; If in one of the indoor subrosia portal rooms (ROOM_SEASONS_3f7 or ROOM_SEASONS_3a8),
+	; update the minimap to the correct overworld screen.
+	; They never disabled this in ages. Possibly this whole section is unused?
 	ld a,(wActiveGroup)
 	cp $03
 	jr nz,++
@@ -4001,9 +4005,9 @@ cutscene13:
 	ld hl,wTmpcfc0+$8
 	ld b,$18
 	call clearMemory
-	ld a,$07
+	ld a,>ROOM_SEASONS_7ff
 	ld (wActiveGroup),a
-	ld a,$ff
+	ld a,<ROOM_SEASONS_7ff
 	ld (wActiveRoom),a
 	ld a,$77
 	ld (wDungeonMapPosition),a
@@ -5319,96 +5323,8 @@ checkTileIsWarpTile:
 	ld hl,warpTileTable
 	jp lookupCollisionTable
 
-; This is a list of tiles that initiate warps when touched.
-warpTileTable:
-	.dw @collisions0
-	.dw @collisions1
-	.dw @collisions2
-	.dw @collisions3
-	.dw @collisions4
-	.dw @collisions5
 
-.ifdef ROM_AGES
-
-	@collisions0:
-	@collisions4:
-		.db $dc $00
-		.db $dd $00
-		.db $de $00
-		.db $df $00
-		.db $ed $00
-		.db $ee $00
-		.db $ef $00
-		.db $00
-	@collisions1:
-		.db $34 $00
-		.db $36 $00
-		.db $44 $00
-		.db $45 $00
-		.db $46 $00
-		.db $47 $00
-		.db $af $00
-		.db $00
-	@collisions2:
-	@collisions5:
-		.db $44 $00
-		.db $45 $00
-		.db $46 $00
-		.db $47 $00
-		.db $4f $00
-		.db $00
-	@collisions3:
-		.db $00
-
-
-.else; ROM_SEASONS
-
-	@collisions0:
-		.db $e6 $00
-		.db $e7 $00
-		.db $e8 $00
-		.db $e9 $00
-		.db $ea $00
-		.db $eb $01 ; Chimney gets special treatment?
-		.db $ed $00
-		.db $ee $00
-		.db $ef $00
-		.db $00
-	@collisions1:
-		.db $e6 $00
-		.db $e7 $00
-		.db $e8 $00
-		.db $ed $00
-		.db $ee $00
-		.db $ef $00
-		.db $00
-	@collisions2:
-		.db $ea $00
-		.db $eb $00
-		.db $ec $00
-		.db $ed $00
-		.db $e8 $00
-		.db $00
-	@collisions3:
-		.db $34 $00
-		.db $36 $00
-		.db $4f $00
-		.db $44 $00
-		.db $45 $00
-		.db $46 $00
-		.db $47 $00
-		.db $00
-	@collisions4:
-		.db $44 $00
-		.db $45 $00
-		.db $46 $00
-		.db $47 $00
-		.db $4f $00
-		.db $00
-	@collisions5:
-		.db $00
-
-.endif ; ROM_SEASONS
+.include {"{GAME_DATA_DIR}/tileProperties/warpTiles.s"}
 
 
 .ifdef ROM_AGES

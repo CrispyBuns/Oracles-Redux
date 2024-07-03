@@ -311,7 +311,7 @@ seedItemState1:
 
 
 @breakTileWithGaleSeed:
-	ld a,BREAKABLETILESOURCE_0d
+	ld a,BREAKABLETILESOURCE_GALE_SEED
 	jp itemTryToBreakTile
 
 
@@ -462,7 +462,7 @@ emberSeedBurn:
 	ret
 
 @breakTile:
-	ld a,BREAKABLETILESOURCE_0c
+	ld a,BREAKABLETILESOURCE_EMBER_SEED
 	call itemTryToBreakTile
 @deleteSelf:
 	jp seedItemDelete
@@ -707,7 +707,7 @@ galeSeedTryToWarpLink:
 ; @param[out]	zflag	Unset when the seed's "effect" should be activated
 seedItemUpdateBouncing:
 	call objectGetTileAtPosition
-	ld hl,seedDontBounceTilesTable
+	ld hl,seedsDontBounceTilesTable
 	call findByteInCollisionTable
 	jr c,@unsetZFlag
 
@@ -830,7 +830,7 @@ seedItemCheckDiagonalCollision:
 ; Collision occurred; check whether it should bounce (set carry flag if so)
 
 	call getTileAtPosition
-	ld hl,seedDontBounceTilesTable
+	ld hl,seedsDontBounceTilesTable
 	call findByteInCollisionTable
 	ccf
 	jr nc,@next
@@ -916,29 +916,9 @@ data_5114:
 	.db $10 $18 $00 $08 $0c $14 $1c $04
 	.db $08 $10 $18 $00 $04 $0c $14 $1c
 
+.include {"{GAME_DATA_DIR}/tileProperties/seedsDontBounce.s"}
 
-; List of tiles which seeds don't bounce off of. (Burnable stuff.)
-seedDontBounceTilesTable:
-	.dw @collisions0
-	.dw @collisions1
-	.dw @collisions2
-	.dw @collisions3
-	.dw @collisions4
-	.dw @collisions5
-
-@collisions0:
-	.db $ce $cf $c5 $c5 $c6 $c7 $c8 $c9 $ca
-@collisions1:
-@collisions3:
-@collisions4:
-	.db $00
-
-@collisions2:
-@collisions5:
-	.db TILEINDEX_UNLIT_TORCH
-	.db TILEINDEX_LIT_TORCH
-	.db $00
-.else
+.else ;ROM_SEASONS
 ;;
 ; @param[out]	zflag	z if no collision
 slingshotCheckCanPassSolidTile:
@@ -1896,11 +1876,12 @@ bombUpdateThrowingVerticallyAndCheckDelete:
 	call itemUpdateThrowingVerticallyAndCheckHazards
 	ret nc
 
+	; Check whether to trigger a special event when a bomb falls into a hazard (bomb upgrade in
+	; ages, or volcano trigger in seasons)
 .ifdef ROM_AGES
-	; Check if room $0050 (Present overworld, bomb upgrade screen)
-	ld bc,$0050
+	ld bc,ROOM_AGES_050
 .else
-	ld bc,$04ef
+	ld bc,ROOM_SEASONS_4ef
 .endif
 	ld a,(wActiveGroup)
 	cp b
@@ -1909,7 +1890,7 @@ bombUpdateThrowingVerticallyAndCheckDelete:
 	cp c
 	jr nz,@delete
 
-	; If so, trigger a cutscene?
+	; If so, trigger the cutscene
 	ld a,$01
 	ld (wTmpcfc0.bombUpgradeCutscene.state),a
 
@@ -2184,7 +2165,7 @@ explosionTryToBreakNextTile:
 	adc e
 	ret nz
 
-	ld a,BREAKABLETILESOURCE_04
+	ld a,BREAKABLETILESOURCE_BOMB
 	jp tryToBreakTile
 
 ; The following is a list of offsets from the center of the bomb at which to try
@@ -3281,7 +3262,7 @@ itemCode29:
 	call itemSetAnimation
 	call objectSetVisiblec3
 
-    ; Room with the wall flame shooters
+	; Room with the wall flame shooters
 	ld a,(wActiveGroup)
 	cp >ROOM_SEASONS_494
 	jr nz,@mainState
@@ -4075,9 +4056,9 @@ itemCode28:
 	push hl
 	ld a,(w1Companion.id)
 	cp SPECIALOBJECTID_RICKY
-	ld a,BREAKABLETILESOURCE_0f
+	ld a,BREAKABLETILESOURCE_RICKY_PUNCH
 	jr z,+
-	ld a,BREAKABLETILESOURCE_11
+	ld a,BREAKABLETILESOURCE_MOOSH_BUTTSTOMP
 +
 	call tryToBreakTile
 	pop hl
@@ -4124,7 +4105,7 @@ itemCode15:
 	ld l,Item.counter1
 	ld (hl),$04
 
-	ld a,BREAKABLETILESOURCE_06
+	ld a,BREAKABLETILESOURCE_SHOVEL
 	call itemTryToBreakTile
 	ld a,SND_CLINK
 	jr nc,+
@@ -4501,10 +4482,10 @@ itemCode18:
 @checkBlockCanAppear:
 	; Disallow cane of somaria usage if in patch's minigame room
 	ld a,(wActiveGroup)
-	cp $05
+	cp >ROOM_AGES_5e8
 	jr nz,+
 	ld a,(wActiveRoom)
-	cp $e8
+	cp <ROOM_AGES_5e8
 	jr z,@@disallow
 +
 	; Must be close to the ground
@@ -5314,7 +5295,7 @@ tryBreakTileWithExpertsRing:
 	ld a,(w1Link.direction)
 	add a
 	ld c,a
-	ld a,BREAKABLETILESOURCE_03
+	ld a,BREAKABLETILESOURCE_EXPERTS_RING
 	jr tryBreakTileWithSword
 
 ;;
@@ -5371,7 +5352,7 @@ tryBreakTileWithSword:
 	ret c
 
 	; Check for bombable wall clink sound
-	ld hl,@clinkSoundTable
+	ld hl,clinkSoundTable
 	call findByteInCollisionTable
 	jr c,@bombableWallClink
 
@@ -5428,74 +5409,8 @@ tryBreakTileWithSword:
 	.db $00 $00 ; Center
 
 
-; 2 lists per entry:
-; * The first is a list of tiles which produce an alternate "clinking" sound indicating
-; they're bombable.
-; * The second is a list of tiles which don't produce clinks at all.
-;
-@clinkSoundTable:
-	.dw @collisions0
-	.dw @collisions1
-	.dw @collisions2
-	.dw @collisions3
-	.dw @collisions4
-	.dw @collisions5
+.include {"{GAME_DATA_DIR}/tileProperties/clinkSounds.s"}
 
-.ifdef ROM_AGES
-@collisions0:
-@collisions4:
-	.db $c1 $c2 $c4 $d1 $cf
-	.db $00
-
-	.db $fd $fe $ff
-	.db $00
-	.db $00
-
-@collisions1:
-@collisions2:
-@collisions5:
-	.db $1f $30 $31 $32 $33 $38 $39 $3a $3b $68 $69
-	.db $00
-
-	.db $0a $0b
-	.db $00
-
-@collisions3:
-	.db $12
-	.db $00
-
-	.db $00
-.else
-@collisions0:
-	.db $c1 $c2 $e2 $cb
-	.db $00
-
-	.db $fd $fe $ff $d9 $da $20 $d7
-
-@collisions1:
-	.db $00
-
-	.db $fd
-
-@collisions2:
-	.db $00
-	.db $00
-
-@collisions3:
-@collisions4:
-	.db $1f $30 $31 $32 $33 $38 $39 $3a $3b
-	.db $00
-
-	.db $0a $0b
-	.db $00
-
-
-@collisions5:
-	.db $12
-	.db $00
-
-	.db $00
-.endif
 
 ;;
 ; Calculates the value for Item.damage, accounting for ring modifiers.

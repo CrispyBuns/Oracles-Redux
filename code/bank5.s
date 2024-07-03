@@ -917,7 +917,7 @@ companionTryToBreakTileFromMoving:
 	ld l,SpecialObject.xh
 	ld c,(hl)
 
-	ld a,BREAKABLETILESOURCE_13
+	ld a,BREAKABLETILESOURCE_COMPANION_MOVEMENT
 	jp tryToBreakTile
 
 ;;
@@ -2163,7 +2163,7 @@ specialObjectTryToBreakTile_source05:
 	ld c,(hl)
 	add $05
 	ld b,a
-	ld a,BREAKABLETILESOURCE_05
+	ld a,BREAKABLETILESOURCE_LANDED
 	jp tryToBreakTile
 
 ;;
@@ -2301,7 +2301,7 @@ warpTransition1:
 ;;
 warpUpdateRespawnPoint:
 	ld a,(wActiveGroup)
-	cp NUM_UNIQUE_GROUPS ; Don't update respawn point in sidescrolling rooms?
+	cp FIRST_SIDESCROLL_GROUP ; Don't update respawn point in sidescrolling rooms?
 	jr nc,warpTransition0
 	call setDeathRespawnPoint
 	call updateLinkLocalRespawnPosition
@@ -2329,43 +2329,7 @@ warpTransition_setLinkFacingDir:
 	ld (de),a
 	ret
 
-facingDirAfterWarpTable:
-	.dw @collisions0
-	.dw @collisions1
-	.dw @collisions2
-	.dw @collisions3
-	.dw @collisions4
-	.dw @collisions5
-
-.ifdef ROM_AGES
-
-@collisions1:
-	.db $36 DIR_UP ; Cave opening?
-
-@collisions2:
-@collisions3:
-	.db $44 DIR_LEFT  ; Up stairs
-	.db $45 DIR_RIGHT ; Down stairs
-
-@collisions0:
-@collisions4:
-@collisions5:
-	.db $00
-
-.else ; ROM_SEASONS
-
-@collisions3:
-	.db $36 DIR_UP
-@collisions4:
-@collisions5:
-	.db $44 DIR_LEFT
-	.db $45 DIR_RIGHT
-@collisions0:
-@collisions1:
-@collisions2:
-	.db $00
-
-.endif
+.include {"{GAME_DATA_DIR}/tileProperties/facingDirAfterWarp.s"}
 
 ;;
 ; TRANSITION_SRC_FADEOUT
@@ -3638,10 +3602,10 @@ linkState02:
 .ifdef ROM_AGES
 	; Check if the current room is the moblin keep with the crumbling floors
 	ld a,(wActiveGroup)
-	cp $02
+	cp >ROOM_AGES_29f
 	jr nz,+
 	ld a,(wActiveRoom)
-	cp $9f
+	cp <ROOM_AGES_29f
 	jr nz,+
 
 	jpab bank1.warpToMoblinKeepUnderground
@@ -7238,12 +7202,12 @@ checkLinkPushingAgainstBed:
 	cp $03
 	ret nz
 
-	; Check link is in room $9e, position $17, facing right
+	; Check link is in the room with the bed, and is next to it
 .ifdef ROM_AGES
-	ldbc $9e, $17
+	ldbc <ROOM_AGES_39e, $17
 	ld l,DIR_RIGHT
 .else
-	ldbc $82, $14
+	ldbc <ROOM_SEASONS_382, $14
 	ld l,DIR_LEFT
 .endif
 	ld a,(wActiveRoom)
@@ -7827,7 +7791,7 @@ linkState12:
 	jr nc,@noCollision
 
 	; If this tile is breakable, we can land here
-	ld a, $80 | BREAKABLETILESOURCE_05
+	ld a, $80 | BREAKABLETILESOURCE_LANDED
 	call tryToBreakTile
 	jr c,@landHere
 
@@ -7864,36 +7828,8 @@ linkState12:
 	.db $08 $00 ; DIR_DOWN
 	.db $00 $f8 ; DIR_LEFT
 
+.include {"{GAME_DATA_DIR}/tileProperties/landableTilesFromCliffs.s"}
 
-; This is a list of tiles that can be landed on when jumping down a cliff, despite being
-; solid.
-landableTileFromCliffExceptions:
-	.dw @collisions0
-	.dw @collisions1
-	.dw @collisions2
-	.dw @collisions3
-	.dw @collisions4
-	.dw @collisions5
-
-.ifdef ROM_AGES
-@collisions1:
-@collisions2:
-@collisions5:
-	.db TILEINDEX_RAISABLE_FLOOR_1 TILEINDEX_RAISABLE_FLOOR_2
-@collisions0:
-@collisions3:
-@collisions4:
-	.db $00
-.else
-@collisions0:
-	.db $eb $20
-@collisions1:
-@collisions2:
-@collisions3:
-@collisions4:
-@collisions5:
-	.db $00
-.endif
 
 ;;
 specialObjectCode_transformedLink:
@@ -11614,7 +11550,7 @@ rickyBreakTilesOnLanding:
 	ld a,(w1Companion.xh)
 	add c
 	ld c,a
-	ld a,BREAKABLETILESOURCE_10
+	ld a,BREAKABLETILESOURCE_RICKY_LANDED
 	call tryToBreakTile
 	pop hl
 	jr @next

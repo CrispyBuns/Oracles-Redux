@@ -1,15 +1,19 @@
+; Most tiles that can be "broken" (turned into another tile) are defined in this file.
+;
+; Data format:
+;   b0: Tile index that can be broken
+;   b1: Method of breakage (an index for "breakableTileModes" table, see below)
+
 breakableTileCollisionTable:
-	.dw breakableTileCollision0
-	.dw breakableTileCollision1
-	.dw breakableTileCollision2
-	.dw breakableTileCollision3
-	.dw breakableTileCollision4
-	.dw breakableTileCollision5
+	.dw @overworld
+	.dw @subrosia
+	.dw @makutree
+	.dw @indoors
+	.dw @dungeons
+	.dw @sidescrolling
 
-; 1st byte is the tile index, 2nd is an index for "breakableTileModes".
-
-breakableTileCollision0:
-breakableTileCollision2:
+@overworld:
+@makutree:
 	.db $f8 $00
 	.db $f2 $0d
 	.db $c4 $01
@@ -70,7 +74,8 @@ breakableTileCollision2:
 	.db $af $14
 	.db $bf $14
 	.db $00
-breakableTileCollision1:
+
+@subrosia:
 	.db $f8 $00
 	.db $f9 $00
 	.db $f2 $0d
@@ -127,8 +132,9 @@ breakableTileCollision1:
 	.db $bf $17
 	.db $2f $16
 	.db $00
-breakableTileCollision3:
-breakableTileCollision4:
+
+@indoors:
+@dungeons:
 	.db $f8 $2d
 	.db $20 $19
 	.db $21 $1a
@@ -153,41 +159,35 @@ breakableTileCollision4:
 	.db $2b $2c
 	.db $2a $2c
 	.db $00
-breakableTileCollision5:
+
+@sidescrolling:
 	.db $12 $2f
 	.db $00
 
+
+; Each tile index in the above table is paired with an index for the table below, which contains the
+; following data for each entry.
+;
 ; Data format:
+;
 ;  Parameters 1-3:
-;    The ways the tile can be broken. Each bit corresponds to a different method
-;    (see "constants/breakableTileSources.s"). Bit order in each byte is reversed so that, when read
-;    left-to-right, the first bit corresponds to breakable tile source "$00" and the last
-;    corresponds to source "$13".
+;    The ways the tile can be broken. Each bit corresponds to a different method (see
+;    "constants/breakableTileSources.s"). Bit order can be read left-to-right, so that the first bit
+;    corresponds to breakable tile source "$00" and the last corresponds to source "$13".
 ;
 ;  4th parameter:
-;   Dunno
+;    If nonzero, determines types of items that can drop & probabilities of them dropping
+;
 ;  5th parameter:
-;   Bits 0-3: the id of the interaction that should be created when the
-;             object is destroyed (ie. bush destroying animation).
-;   Bit 4:    sets the subid (0 or 1) which tells it whether to flicker.
-;   Bit 6:    whether to play the discovery sound.
-;   Bit 7:    set if the game should call updateRoomFlagsForBrokenTile on breakage
+;    Bits 0-3: The id of the interaction that should be created when the object is destroyed (ie.
+;              bush destroying animation).
+;    Bit 4:    If set, animation should flicker. (This sets the subid on the spawned interaction to 1.)
+;    Bit 6:    Whether to play the discovery sound.
+;    Bit 7:    Set if the game should call updateRoomFlagsForBrokenTile on breakage.
+;              Consult the "breakableTileRoomFlags.s" file for details.
+;
 ;  6th parameter:
-;   The tile it should turn into when broken, or $00 for no change.
-.macro m_BreakableTileData
-	.if \3 > $f
-	.fail
-	.endif
-	.if \4 > $f
-	.fail
-	.endif
-
-	; Parameters 1-3 have their bits reversed.
-	dbrev \1, \2
-	revb \3
-	.db (_out >> 4) | ((\4)<<4) ; "_out" is the output from the revb macro ("\3" with bits flipped).
-	.db \5, \6
-.endm
+;    The tile it should turn into when broken, or $00 for no change.
 
 breakableTileModes:
 	m_BreakableTileData %01101001 %00001100 %0100 $1 $10 $04 ; $00
