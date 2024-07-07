@@ -1,4 +1,4 @@
- m_section_free Bank_1_Code_1 NAMESPACE bank1
+m_section_free Bank_1_Code_1 NAMESPACE bank1
 
 ;;
 func_4000:
@@ -258,7 +258,7 @@ screenTransitionState2:
 
 ;;
 ; @param	b	Direction button to check
-; @param	c	Direction of transition (see constants/directions.s)
+; @param	c	Direction of transition (see constants/common/directions.s)
 @transition:
 	ld a,(w1Link.enabled)
 	or a
@@ -277,7 +277,7 @@ screenTransitionState2:
 	ret
 +
 	ld a,(w1Companion.id)
-	cp SPECIALOBJECTID_MINECART
+	cp SPECIALOBJECT_MINECART
 	jr z,@startTransition
 
 	; Don't allow transitions over holes
@@ -2261,9 +2261,9 @@ cutscene17:
 
 	ldi a,(hl)
 .ifdef ROM_AGES
-	cp INTERACID_ZELDA
+	cp INTERAC_ZELDA
 .else
-	cp INTERACID_S_ZELDA
+	cp INTERAC_ZELDA
 .endif
 	jr z,++
 +
@@ -2586,7 +2586,7 @@ cutscene19:
 
 .ENDS
 
- m_section_free Bank_1_Data_1 NAMESPACE bank1
+m_section_free Bank_1_Data_1 NAMESPACE bank1
 
 .include {"{GAME_DATA_DIR}/dungeonData.s"}
 .include "data/dungeonProperties.s"
@@ -2594,7 +2594,7 @@ cutscene19:
 
 .ends
 
- m_section_free Bank_1_Code_2 NAMESPACE bank1
+m_section_free Bank_1_Code_2 NAMESPACE bank1
 
 ;;
 ; Load 8 bytes into wDungeonMapData and up to $100 bytes into w2DungeonLayout.
@@ -3775,7 +3775,7 @@ func_5c18:
 	call checkUpdateDungeonMinimap
 	ld hl,w1Companion.id
 	ldd a,(hl)
-	cp SPECIALOBJECTID_RAFT
+	cp SPECIALOBJECT_RAFT
 	jr nz,++
 
 	bit 1,(hl)
@@ -3939,9 +3939,9 @@ func_5cfe:
 	or a
 	jr z,@clearCompanion
 	ld a,(w1Companion.id)
-	cp SPECIALOBJECTID_MINECART
+	cp SPECIALOBJECT_MINECART
 	jr z,@clearCompanion
-	cp SPECIALOBJECTID_MAPLE
+	cp SPECIALOBJECT_MAPLE
 	jr z,@clearCompanion
 
 .ifdef ROM_SEASONS
@@ -4116,7 +4116,7 @@ checkDisplayEraOrSeasonInfo:
 	ret nz
 	call getFreeInteractionSlot
 	ret nz
-	ld (hl),INTERACID_ERA_OR_SEASON_INFO
+	ld (hl),INTERAC_ERA_OR_SEASON_INFO
 	ret
 .endif
 
@@ -4246,7 +4246,7 @@ checkDisplayEraOrSeasonInfo:
 	call getFreeInteractionSlot
 	ret nz
 
-	ld (hl),INTERACID_ERA_OR_SEASON_INFO
+	ld (hl),INTERAC_ERA_OR_SEASON_INFO
 	ret
 
 .endif
@@ -5324,7 +5324,7 @@ checkTileIsWarpTile:
 	jp lookupCollisionTable
 
 
-.include {"{GAME_DATA_DIR}/tileProperties/warpTiles.s"}
+.include {"{GAME_DATA_DIR}/tile_properties/warpTiles.s"}
 
 
 .ifdef ROM_AGES
@@ -5342,7 +5342,7 @@ checkTileIsWarpTile:
 
 
 ; This is superfree (bank can change) so namespace should be different from the others
- m_section_superfree Bank_1_Data_2 NAMESPACE bank1Moveable
+m_section_superfree Bank_1_Data_2 NAMESPACE bank1Moveable
 
 	.include {"{GAME_DATA_DIR}/paletteHeaders.s"}
 	.include {"{GAME_DATA_DIR}/uncmpGfxHeaders.s"}
@@ -5352,7 +5352,7 @@ checkTileIsWarpTile:
 .ends
 
 
- m_section_free Bank_1_Code_3 NAMESPACE bank1
+m_section_free Bank_1_Code_3 NAMESPACE bank1
 
 .ifdef ROM_AGES
 ;;
@@ -5574,7 +5574,7 @@ determineCompanionRegionSeason:
 
 @companionRegion:
 	ld a,(wAnimalCompanion)
-	sub SPECIALOBJECTID_RICKY-1
+	sub SPECIALOBJECT_RICKY-1
 	and $03
 	ld (wRoomStateModifier),a
 	jr setSeason

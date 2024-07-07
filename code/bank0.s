@@ -2011,10 +2011,17 @@ _initialThreadStates:
 
 ; Upper bytes of addresses of flags for each group
 flagLocationGroupTable:
+.ifdef ROM_AGES
 	.db >wPresentRoomFlags, >wPastRoomFlags
-	.db >wGroup2Flags, >wPastRoomFlags
-	.db >wGroup4Flags, >wGroup5Flags
-	.db >wGroup4Flags, >wGroup5Flags
+	.db >wPresentRoomFlags, >wPastRoomFlags
+	.db >wGroup4RoomFlags,  >wGroup5RoomFlags
+	.db >wGroup4RoomFlags,  >wGroup5RoomFlags
+.else ;ROM_SEASONS
+	.db >wOverworldRoomFlags, >wSubrosiaRoomFlags
+	.db >wSubrosiaRoomFlags,  >wSubrosiaRoomFlags
+	.db >wGroup4RoomFlags,    >wGroup5RoomFlags
+	.db >wGroup4RoomFlags,    >wGroup5RoomFlags
+.endif
 
 ;;
 ; @param	hActiveFileSlot	File index
@@ -3764,8 +3771,8 @@ updateRoomFlagsForBrokenTile:
 	ret
 
 
-.include {"{GAME_DATA_DIR}/tileProperties/breakableTileRoomFlags.s"}
-.include {"{GAME_DATA_DIR}/tileProperties/breakableTileGashaMaturity.s"}
+.include {"{GAME_DATA_DIR}/tile_properties/breakableTileRoomFlags.s"}
+.include {"{GAME_DATA_DIR}/tile_properties/breakableTileGashaMaturity.s"}
 
 
 ;;
@@ -3838,7 +3845,13 @@ setRoomFlagsForUnlockedKeyDoor_overworldOnly:
 	rst_addAToHl
 	ld a,(wActiveRoom)
 	ld c,a
-	ld b,>wGroup2Flags
+
+.ifdef ROM_AGES
+	ld b,>wPresentRoomFlags
+.else
+	ld b,>wSubrosiaRoomFlags
+.endif
+
 	ld a,(bc)
 	or (hl)
 	ld (bc),a
@@ -4423,7 +4436,7 @@ checkGivenCollision_allowHoles:
 	ld hl,@specialCollisions
 	jr _complexCollision
 
-; See constants/specialCollisionValues.s for what each of these bytes is for.
+; See constants/common/specialCollisionValues.s for what each of these bytes is for.
 ; ie. The first defined byte is for holes.
 @specialCollisions:
 	.db %00000000 %11000011 %00000011 %11000000 %00000000 %11000011 %11000011 %00000000
@@ -4829,7 +4842,7 @@ loadTreasureDisplayData:
 
 ;;
 ; @param	a
-; @param[out]	a,c	Subid for PARTID_ITEM_DROP (see constants/itemDrops.s)
+; @param[out]	a,c	Subid for PART_ITEM_DROP (see constants/common/itemDrops.s)
 ; @param[out]	zflag	z if there is no item drop
 decideItemDrop:
 	ld c,a
@@ -4845,7 +4858,7 @@ decideItemDrop:
 ;;
 ; Checks whether an item drop of a given type can spawn.
 ;
-; @param	a	Item drop index (see constants/itemDrops.s)
+; @param	a	Item drop index (see constants/common/itemDrops.s)
 ; @param[out]	zflag	z if item cannot spawn (Link doesn't have it)
 checkItemDropAvailable:
 	ld c,a
@@ -4862,7 +4875,7 @@ checkItemDropAvailable:
 	ret
 
 ;;
-; @param	a	Treasure for Link to obtain (see constants/treasure.s)
+; @param	a	Treasure for Link to obtain (see constants/common/treasure.s)
 ; @param	c	Parameter (ie. item level, ring index, etc...)
 ; @param[out]	a	Sound to play on obtaining the treasure (if nonzero)
 giveTreasure:
@@ -4877,7 +4890,7 @@ giveTreasure:
 	ret
 
 ;;
-; @param	a	Treasure for Link to lose (see constants/treasure.s)
+; @param	a	Treasure for Link to lose (see constants/common/treasure.s)
 loseTreasure:
 	ld b,a
 	ldh a,(<hRomBank)
@@ -4888,7 +4901,7 @@ loseTreasure:
 	ret
 
 ;;
-; @param	a	Item to check for (see constants/treasure.s)
+; @param	a	Item to check for (see constants/common/treasure.s)
 ; @param[out]	cflag	Set if you have that item
 ; @param[out]	a	The value of the treasure's "related variable" (ie. item level)
 checkTreasureObtained:
@@ -4975,7 +4988,7 @@ getRupeeValue:
 	pop hl
 	ret
 
-; Each number here corresponds to a value in constants/rupeeValues.s.
+; Each number here corresponds to a value in constants/common/rupeeValues.s.
 @rupeeValues:
 	.dw $0000 ; $00
 	.dw $0001 ; $01
@@ -5449,7 +5462,7 @@ clearAllItemsAndPutLinkOnGround:
 .ifdef ROM_AGES
 	ld l,Item.id
 	ld a,(hl)
-	cp ITEMID_18
+	cp ITEM_18
 	jr nz,@notSomariaBlock
 
 ; Somaria block creation
@@ -5693,7 +5706,7 @@ copyW4PaletteDataToW2TilesetBgPalettes:
 ;;
 ; @param[in]	b	Room
 ; @param[out]	b	Dungeon property byte for the given room (see
-;			constants/dungeonRoomProperties.s)
+;			constants/common/dungeonRoomProperties.s)
 getRoomDungeonProperties:
 	ldh a,(<hRomBank)
 	push af
@@ -7675,7 +7688,7 @@ checkLinkIsOverHazard:
 
 	ld e,SpecialObject.id
 	ld a,(de)
-	sub SPECIALOBJECTID_DIMITRI
+	sub SPECIALOBJECT_DIMITRI
 	ret z
 
 	push bc
@@ -7726,7 +7739,7 @@ objectReplaceWithAnimationIfOnHazard:
 	rrca
 	jr c,objectReplaceWithFallingDownHoleInteraction
 
-	ld b,INTERACID_LAVASPLASH
+	ld b,INTERAC_LAVASPLASH
 	jr objectReplaceWithSplash@create
 
 ;;
@@ -7736,7 +7749,7 @@ objectReplaceWithFallingDownHoleInteraction:
 
 ;;
 objectReplaceWithSplash:
-	ld b,INTERACID_SPLASH
+	ld b,INTERAC_SPLASH
 @create:
 	call objectCreateInteractionWithSubid00
 @delete:
@@ -7861,7 +7874,7 @@ breakCrackedFloor:
 
 	call getFreeInteractionSlot
 	ret nz
-	ld (hl),INTERACID_FALLDOWNHOLE
+	ld (hl),INTERAC_FALLDOWNHOLE
 
 	; Disable interaction's sound effect
 	inc l
@@ -8293,7 +8306,7 @@ checkInteractionSubstate:
 	ret
 
 
-.include {"{GAME_DATA_DIR}/tileProperties/hazards.s"}
+.include {"{GAME_DATA_DIR}/tile_properties/hazards.s"}
 
 ; Takes an angle as an index.
 ;
@@ -8311,7 +8324,7 @@ slideAngleTable:
 ; Used in bank6._checkTileIsPassableFromDirection for the specific purpose of determining
 ; whether an item can pass through a cliff facing a certain direction. Odd values can pass
 ; through 2 directions, whereas even values can only pass through the direction
-; corresponding to the value divided by 2 (see constants/directions.s).
+; corresponding to the value divided by 2 (see constants/common/directions.s).
 ;
 angleTable:
 	.db $00 $00 $00 $01 $01 $01 $02 $02
@@ -8364,7 +8377,7 @@ setScreenShakeCounter:
 
 ;;
 objectCreatePuff:
-	ld b,INTERACID_PUFF
+	ld b,INTERAC_PUFF
 
 ;;
 ; @param	b	High byte of interaction
@@ -8394,7 +8407,7 @@ objectCreateFallingDownHoleInteraction:
 	call getFreeInteractionSlot
 	ret nz
 
-	ld (hl),INTERACID_FALLDOWNHOLE
+	ld (hl),INTERAC_FALLDOWNHOLE
 
 	; Store object type in Interaction.counter1
 	ld l,Interaction.counter1
@@ -8493,7 +8506,7 @@ interactionSetHighTextIndex:
 ; Sets the interaction's script to hl, also resets Interaction.counter variables.
 ;
 ; @param	hl	The address of the script
-; @param[out]	a	0 (this is assumed by INTERACID_MAMAMU_DOG due to an apparent bug...)
+; @param[out]	a	0 (this is assumed by INTERAC_MAMAMU_DOG due to an apparent bug...)
 interactionSetScript:
 	ld e,Interaction.scriptPtr
 	ld a,l
@@ -8849,7 +8862,7 @@ objectPreventLinkFromPassing:
 	; If Dimitri is active, we can't let him pass either while being thrown.
 	ld hl,w1Companion.id
 	ld a,(hl)
-	cp SPECIALOBJECTID_DIMITRI
+	cp SPECIALOBJECT_DIMITRI
 	jr nz,@end
 
 	ld l,<w1Companion.state
@@ -9226,7 +9239,7 @@ giveRingToLink:
 createRingTreasure:
 	call getFreeInteractionSlot
 	ret nz
-	ld (hl),INTERACID_TREASURE
+	ld (hl),INTERAC_TREASURE
 	inc l
 	ld (hl),TREASURE_RING
 	inc l
@@ -9238,14 +9251,14 @@ createRingTreasure:
 	ret
 
 ;;
-; Creates a "treasure" interaction (INTERACID_TREASURE). Doesn't initialize X/Y.
+; Creates a "treasure" interaction (INTERAC_TREASURE). Doesn't initialize X/Y.
 ;
 ; @param	bc	Treasure to create (b = main id, c = subid)
 ; @param[out]	zflag	Set if the treasure was created successfully.
 createTreasure:
 	call getFreeInteractionSlot
 	ret nz
-	ld (hl),INTERACID_TREASURE
+	ld (hl),INTERAC_TREASURE
 	inc l
 	ld (hl),b
 	inc l
@@ -9493,7 +9506,7 @@ enemyDie:
 	ldi (hl),a
 
 	; Part.id
-	ld (hl),PARTID_ENEMY_DESTROYED
+	ld (hl),PART_ENEMY_DESTROYED
 
 	; [Part.subid] = [Enemy.id]
 	inc l
@@ -9525,7 +9538,7 @@ enemyDie:
 ; The returned value of 'c' from here is moved to 'a' before the enemy-specific code is
 ; called, so that code can check the return value of this function.
 ;
-; @param[out]	c	"Enemy status" (see constants/enemyStates.s).
+; @param[out]	c	"Enemy status" (see constants/common/enemyStates.s).
 ;			$00 normally
 ;			$02 if stunned
 ;			$03 if health is 0
@@ -9970,7 +9983,7 @@ linkApplyDamage:
 ; This will force Link's ID to change next time "updateSpecialObjects" is called. Also
 ; clears subid, var03, state, and substate.
 ;
-; @param	a	Link ID value (see constants/specialObjectTypes.s)
+; @param	a	Link ID value (see constants/common/specialObjects.s)
 setLinkIDOverride:
 	or $80
 	ld (wLinkIDOverride),a
@@ -10022,7 +10035,7 @@ specialObjectAnimate:
 	ret
 
 ;;
-; @param	a	Animation (see constants/linkAnimations.s)
+; @param	a	Animation (see constants/common/linkAnimations.s)
 ; @param	d	Special object index
 specialObjectSetAnimation:
 	ld e,SpecialObject.animMode
@@ -10245,7 +10258,7 @@ checkPegasusSeedCounter:
 ;;
 ; Try to break a tile at the given item's position.
 ;
-; @param	a	The type of collision (see constants/breakableTileSources.s)
+; @param	a	The type of collision (see constants/common/breakableTileSources.s)
 ; @param[out]	cflag	Set if the tile was broken (or can be broken)
 itemTryToBreakTile:
 	ld h,d
@@ -10256,7 +10269,7 @@ itemTryToBreakTile:
 ;;
 ; See bank6.tryToBreakTile for a better description.
 ;
-; @param	a	The type of collision (see constants/breakableTileSources.s)
+; @param	a	The type of collision (see constants/common/breakableTileSources.s)
 ;			If bit 7 is set, it will only check if the tile is breakable; it
 ;			won't actually break it.
 ; @param	bc	The YYXX position
@@ -10383,9 +10396,9 @@ clearVar3fForParentItems:
 ;
 ; @param	d	Link object
 linkCreateSplash:
-	ld b,INTERACID_SPLASH
+	ld b,INTERAC_SPLASH
 
-	; Check if in lava; if so, set b to INTERACID_LAVASPLASH.
+	; Check if in lava; if so, set b to INTERAC_LAVASPLASH.
 	ld a,(wLinkSwimmingState)
 	bit 6,a
 	jr z,+
@@ -11013,7 +11026,7 @@ initializeRoom:
 	dec a
 	jr nz,+
 
-	ld b,INTERACID_SCREEN_DISTORTION
+	ld b,INTERAC_SCREEN_DISTORTION
 	jp objectCreateInteractionWithSubid00
 +
 	callab roomInitialization.calculateRoomStateModifier
@@ -11156,7 +11169,7 @@ objectDeleteRelatedObj1AsStaticObject:
 ;;
 ; Saves an object to a "static object" slot, which persists between rooms.
 ;
-; @param	a	Static object type (see constants/staticObjectTypes.s)
+; @param	a	Static object type (see constants/common/staticObjectTypes.s)
 ; @param	d	Object
 ; @param	hl	Address in wStaticObjects
 objectSaveAsStaticObject:
@@ -11200,7 +11213,7 @@ objectSaveAsStaticObject:
 	ret
 
 ;;
-; @param	a	Global flag to check (see constants/globalFlags.s)
+; @param	a	Global flag to check (see constants/common/globalFlags.s)
 checkGlobalFlag:
 	ld hl,wGlobalFlags
 	jp checkFlag
@@ -12182,7 +12195,7 @@ checkDungeonUsesToggleBlocks:
 	ld hl,dungeonsUsingToggleBlocks
 	jp checkFlag
 
-	.include "data/dungeonsUsingToggleBlocks.s"
+	.include "data/ages/dungeonsUsingToggleBlocks.s"
 
 .else ; ROM_SEASONS
 seasonsFunc_35cc:
@@ -12449,7 +12462,7 @@ loadTilesetLayout:
 ;;
 ; Loads the address of unique header gfx (a&$7f) into wUniqueGfxHeaderAddress.
 ;
-; @param	a	Unique gfx header (see constants/uniqueGfxHeaders.s).
+; @param	a	Unique gfx header (see constants/common/uniqueGfxHeaders.s).
 ;			Bit 7 is ignored.
 loadUniqueGfxHeader:
 	and $7f
@@ -13677,7 +13690,7 @@ getWildTokayObjectDataIndex:
 objectCreateSparkle:
 	call getFreeInteractionSlot
 	ret nz
-	ld (hl),INTERACID_SPARKLE
+	ld (hl),INTERAC_SPARKLE
 	inc l
 	ld (hl),$00
 	jp objectCopyPositionWithOffset
@@ -13689,7 +13702,7 @@ objectCreateSparkle:
 objectCreateSparkleMovingUp:
 	call getFreeInteractionSlot
 	ret nz
-	ld (hl),INTERACID_SPARKLE
+	ld (hl),INTERAC_SPARKLE
 	inc l
 	ld (hl),$02
 	ld l,Interaction.speedY
@@ -13705,7 +13718,7 @@ objectCreateSparkleMovingUp:
 objectCreateRedBlueOrb:
 	call getFreeInteractionSlot
 	ret nz
-	ld (hl),INTERACID_SPARKLE
+	ld (hl),INTERAC_SPARKLE
 	inc l
 	ld (hl),$04
 	jp objectCopyPositionWithOffset
