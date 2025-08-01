@@ -4706,7 +4706,7 @@ interactionInitGraphics:
 	jp interactionSetAnimation
 
 ;;
-func_1613:
+refreshLoadedTreeGfx:
 	ld a,(wLoadedTreeGfxIndex)
 	or a
 	ret z
@@ -10292,7 +10292,7 @@ tryToBreakTile:
 	ret
 
 ;;
-; Calls bank6._clearAllParentItems.
+; Calls bank6.clearAllParentItems_body.
 clearAllParentItems:
 	ld c,$00
 	jr ++
